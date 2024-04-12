@@ -10,7 +10,6 @@
 import sys
 
 # Subpackage Imports
-from bs4 import BeautifulSoup
 from typing import Generator
 from bz2 import BZ2File 
 
