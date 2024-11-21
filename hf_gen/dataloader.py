@@ -1,26 +1,18 @@
-###################################################################################################
-#                                                                                                 #
-#                                           DATALOADERS                                           #
-#                                      for the SBX 2 HF repo                                      #
-#                                                                                                 #
-###################################################################################################
+"""
 
+Dataloaders to convert from Språkbanken XML files to tabular json files
 
-# Package Imports
-import sys
+"""
 
-# Subpackage Imports
 from typing import Generator
 from bz2 import BZ2File 
 
-# Aliased Imports
 import xml.etree.ElementTree as ET
-#import lxml.etree as ET
+
+import requests
 
 
-###################################################################################################
-
-def load_xml( F : str | BZ2File , keep_paragraphs : bool = True ) -> Generator :
+def load_xml( F : str | BZ2File | requests.Response, keep_paragraphs : bool = True ) -> Generator :
     """
     This function takes in an XLM file in the new format (as of 2023) and ouputs its text.
 
@@ -38,49 +30,30 @@ def load_xml( F : str | BZ2File , keep_paragraphs : bool = True ) -> Generator :
         A generator that yields the sentences
     """
 
-    # We got the original version of this function from Martin
+    # Parse the XML file
+    tree = ET.parse(F)
+    root = tree.getroot()
 
-    # Load the XLM tree
-    etree = ET.iterparse(F, events=("end",))
+    # Extract corpus information
+    corpus_id = root.attrib.get("id")
+    print(f"Corpus ID: {corpus_id}")
 
-    # Initialize variables
-    sentence = []
+    # Iterate through texts
+    for text in root.findall("text"):
+        # Iterate through paragraphs
+        for paragraph in text.findall("paragraph"):
+            for sentence in paragraph.findall("sentence"):
+                sentence_id = sentence.attrib.get("id")
+                # Extract words in the sentence
+                words = []
+                for word in sentence.findall("w"):
+                    word_text = word.text
+                    words.append(word_text)
+                sent = " ".join(words)
+                yield sent, sentence_id
+                
 
-    # Head counter
-    counter = 0
 
-    # TODO - use this to load old files(?)
-    has_tails = False
-
-    keep = ["token","w"]
-    split = ["text","corpus"]
-    sections = ["sentence","paragraph"]
-
-    if keep_paragraphs:
-        keep.extend(sections)
-    else:
-        split.extend(sections)
-
-    for event, element in etree:
-
-        # Load the sentences
-        if event == "end" and element.tag.lower() in keep:
-            sentence.append(element.text + element.attrib.get("_tail", " ")\
-                                      .replace("\s", " ").replace(r"\n", " ").replace(r"\t", "\t"))
-            element.clear()
-
-        # If we find an end tag, we store the sentence and start a new one
-        elif event == "end" and element.tag.lower() in split:
-            current_sentence = "".join(sentence)
-            yield current_sentence
-            sentence = []
-            counter += 1
-
-        else:
-            print(event, element.tag, element.text)
-            raise Exception("I do not know how to parse this tag at the moment")
-
-###################################################################################################
 
 def load_corpus_file( path : str , keep_paragraphs : bool = True ) -> Generator :
     """
@@ -106,6 +79,12 @@ def load_corpus_file( path : str , keep_paragraphs : bool = True ) -> Generator 
 
     #print(extension2)
 
+    # If we have a url
+    if path.startswith('https://'): # Temporary hack 
+        resp = requests.get(path, stream=True)
+        resp.raw.decode_content = True
+        path = resp
+
     # If we have an xml, extract the text from it
     if extension == "xml":
         generator = load_xml( F=path , keep_paragraphs=keep_paragraphs )
@@ -116,13 +95,9 @@ def load_corpus_file( path : str , keep_paragraphs : bool = True ) -> Generator 
     elif (extension == "bz2") and (extension2 == "xml"):
         with BZ2File(path, mode="r") as F:
             generator = load_xml( F=F , keep_paragraphs=keep_paragraphs )
-            while True:
-                yield next( generator )
+            for sent, sent_id in generator:
+                yield sent, sent_id
 
     # Otherwise, raise an error
     else:
         raise NotImplementedError("Extension type "+extension+" is not supported at the time.")
-    
-
-
-###################################################################################################
