@@ -30,18 +30,19 @@ class Builder(datasets.GeneratorBasedBuilder):
             "sentence": datasets.Value("string")
         })
         return datasets.DatasetInfo(
-            features=f,
-            supervised_keys=None,
-            description=__DESCRIPTION,
-            homepage=__HOMEPAGE,
-            citation=__CITATION
+            features = f,
+            supervised_keys = None,
+            description = __DESCRIPTION,
+            homepage = __HOMEPAGE,
+            citation = __CITATION
         )
 
     def _split_generators(self, dl_manager):
-        #load_corpus_file(__URL)
-        #dl_manager.download_and_extract(__URL)
-        raise NotImplementedError        
+        downloaded_files = dl_manager.download_and_extract(__URL)
+        return [datasets.SplitGenerator(name=datasets.Split.ALL, gen_kwargs={"filepath": downloaded_files["all"]})]
 
-    def _generate_examples(self):
-        for i, line in load_corpus_file(__URL):
-            yield i, {"text" : line.rstrip()}
+
+    def _generate_examples(self, filepath):
+        with open(filepath) as f:
+            for i, line in load_corpus_file(f):
+                yield i, {"text" : line.rstrip()}
