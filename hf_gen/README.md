@@ -18,4 +18,4 @@
 
 # Disclaimer
 
-This repository has been automatically created using the [sb2hf](https://github.com/felixhultin/sb2hf/tree/main) tool.
+This repository has been automatically created using the [sb2hf](https://github.com/felixhultin/sb2hf/tree/main) tool, version {{ sb2hf_version }}.
