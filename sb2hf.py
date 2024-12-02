@@ -73,7 +73,7 @@ def sb2hf():
         create_repo(
             repo_id=repo_id,
             repo_type=repo_type,
-            private=args.hf_create_private_repo,
+            private= not args.hf_public,
             token=args.hf_token,
             exist_ok=True,
         )
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     parser.add_argument('--hf-output-folder', help="Where to locally save the resulting HuggingFace repository.")
     parser.add_argument('--push-to-hub', help="If activated, pushes generated repository directly to hub.", action='store_true', default=False)
     parser.add_argument('--hf-namespace', help="Huggingface user or organization to push dataset to", default='sbx')
-    parser.add_argument('--hf-create-private-repo', help="Huggingface user or organization to push dataset to", default=True)
+    parser.add_argument('--hf-public', help="Flag if Hugging Face repository should be public", default=False)
     parser.add_argument('--hf-token', help="Huggingface User Access Token to authenticate to the Hub", default=os.environ.get('HF_TOKEN', None))
     parser.add_argument('--sbx-metadata-api', help="API back-end to fetch information about SBX resources", default="https://ws.spraakbanken.gu.se/ws")
     parser.add_argument('--upload-data',

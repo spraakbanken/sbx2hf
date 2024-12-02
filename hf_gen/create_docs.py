@@ -36,7 +36,6 @@ def write_readme(url_reader: URLReader, metadata : dict, fp : str):
     with open('hf_gen/README.md', 'r') as file:
         template = Template(file.read(),trim_blocks=True)
         rendered_file = template.render(**template_variables)
-    #output the file
     hf_metadata = create_hf_metadata_yaml(metadata)
     output_file = codecs.open(fp, "w", "utf-8")
     readme = f"{hf_metadata}\n{rendered_file}"
