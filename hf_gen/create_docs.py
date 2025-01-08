@@ -18,7 +18,7 @@ from urlparser import URLReader
 
 
 def write_readme(url_reader: URLReader, metadata : dict, fp : str):
-    TEMP_LINK = "https://ws.spraakbanken.gu.se/ws/metadata-dev/" # TODO: remove this when endpoint is in production 
+    TEMP_LINK = "https://ws.spraakbanken.gu.se/ws/metadata-dev" # TODO: remove this when endpoint is in production
     bibtex_query = f"{TEMP_LINK}/bibtex?resource={url_reader.resource_name}&type={metadata['type']}"
     logging.info(f"Fetching bibtex from {bibtex_query}")
     bibtex = requests.get(bibtex_query).json()['bibtex']
@@ -26,6 +26,8 @@ def write_readme(url_reader: URLReader, metadata : dict, fp : str):
         sb2hf_version = pkg_resources.get_distribution('sb2hf').version
     except importlib.metadata.PackageNotFoundError:
         sb2hf_version = "Unknown"
+    from pprint import pprint
+    pprint(metadata)
     template_variables = {
         'description': get_value(metadata, 'description'),
         'title' : get_value(metadata, 'name'),
