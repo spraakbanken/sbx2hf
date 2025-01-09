@@ -26,8 +26,6 @@ def write_readme(url_reader: URLReader, metadata : dict, fp : str):
         sb2hf_version = pkg_resources.get_distribution('sb2hf').version
     except importlib.metadata.PackageNotFoundError:
         sb2hf_version = "Unknown"
-    from pprint import pprint
-    pprint(metadata)
     template_variables = {
         'description': get_value(metadata, 'description'),
         'title' : get_value(metadata, 'name'),
