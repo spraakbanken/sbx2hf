@@ -23,17 +23,17 @@ from hf_gen.dataloader import load_corpus_file
 from urlparser import URLReader
 
 
-def write_repository(url_reader):
+def write_repository(url_reader, config):
     output_folder = f"{url_reader.resource_name}"
     print(f"Saving repository to {output_folder}")
     if os.path.exists(output_folder):
         shutil.rmtree(output_folder)
     os.mkdir(output_folder)
-    metadata_query = f"{args.sbx_metadata_api}/metadata?resource={url_reader.resource_name}"
+    metadata_query = f"{config['sbx_metadata_api']}/metadata?resource={url_reader.resource_name}"
     logging.info(f"Fetching metadata from {metadata_query}")
     metadata = requests.get(metadata_query).json()
     write_readme(url_reader, metadata, f'{output_folder}/README.md')
-    if args.upload_data:
+    if config['upload_data']:
         url_reader.download_file(to=output_folder)
         resource_fp = f'{output_folder}/{url_reader.bz2_local_path}'
         tsv_fp = f'{output_folder}/all.tsv'
@@ -54,11 +54,11 @@ def write_repository(url_reader):
             shutil.copyfile('hf_gen/dataset_loading_script.py', f'{output_folder}/{url_reader.resource_name}.py')
 
 
-def sb2hf():
-    url_reader = URLReader(args.url)
-    write_repository(url_reader)
-    if args.push_to_hub:
-        if not args.hf_token:
+def sb2hf(**config):
+    url_reader = URLReader(config['url'])
+    write_repository(url_reader, config)
+    if config['push_to_hub']:
+        if not config['hf_token']:
             try:
                 user_info = whoami()
                 print(f"User is authenticated: {user_info['name']}")
@@ -69,17 +69,17 @@ def sb2hf():
                     print("Could not authenticate user.")
         else:
             print("Using API token for authentication.")
-        repo_id, repo_type = f"{args.hf_namespace}/{url_reader.resource_name}", "dataset"
+        repo_id, repo_type = f"{config['hf_namespace']}/{url_reader.resource_name}", "dataset"
         create_repo(
             repo_id=repo_id,
             repo_type=repo_type,
-            private= not args.hf_public,
-            token=args.hf_token,
+            private= not config['hf_public'],
+            token=config['hf_token'],
             exist_ok=True,
         )
         api = HfApi()
         api.upload_folder(
-            folder_path=args.hf_output_folder,
+            folder_path=config['hf_output_folder'],
             repo_id=repo_id,
             repo_type=repo_type,
         )
@@ -119,4 +119,4 @@ if __name__ == '__main__':
         parser.error("--hf-token requires --push-to-hub")
     if args.hf_output_folder is None:
         args.hf_output_folder = args.url.split('/')[-1]
-    sb2hf()
+    sb2hf(**vars(args))
