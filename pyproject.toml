@@ -2,7 +2,7 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 [project]
-name = "sb2hf"
+name = "sbx2hf"
 version = "0.1.0"
 description = "A tool to automatically upload a Språkbanken resource to the Hugging Face Hub."
 readme = "README.md"
