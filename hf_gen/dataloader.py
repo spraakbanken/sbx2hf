@@ -14,7 +14,7 @@ import requests
 
 def load_xml( F : str | BZ2File | requests.Response, keep_paragraphs : bool = True ) -> Generator :
     """
-    This function takes in an XLM file in the new format (as of 2023) and ouputs its text.
+    This function takes in an XLM file in the new format (as of 2023) and old format and ouputs its text.
 
     INPUT
 
@@ -37,20 +37,16 @@ def load_xml( F : str | BZ2File | requests.Response, keep_paragraphs : bool = Tr
     # Extract corpus information
     corpus_id = root.attrib.get("id")
     print(f"Corpus ID: {corpus_id}")
-
-    # Iterate through texts
-    for text in root.findall("text"):
-        # Iterate through paragraphs
-        for paragraph in text.findall("paragraph"):
-            for sentence in paragraph.findall("sentence"):
-                sentence_id = sentence.attrib.get("id")
-                # Extract words in the sentence
-                words = []
-                for word in sentence.findall("w"):
-                    word_text = word.text
-                    words.append(word_text)
-                sent = " ".join(words)
-                yield sent, sentence_id
+    # Iterate through all sentences
+    for sentence_idx, sentence in enumerate(root.iter("sentence")):
+        sentence_id = sentence.attrib.get("id", sentence_idx)
+        # Extract words in the sentence
+        words = []
+        for word in sentence.findall("w") + sentence.findall('token'):
+            word_text = word.text
+            words.append(word_text)
+        sent = " ".join(words)
+        yield sent, sentence_id
                 
 
 
@@ -77,19 +73,11 @@ def load_corpus_file( path : str , keep_paragraphs : bool = True ) -> Generator 
     extension  = path.split(".")[-1]
     extension2 = path.split(".")[-2]
 
-    #print(extension2)
-
-    # If we have a url
-    if path.startswith('https://'): # Temporary hack 
-        resp = requests.get(path, stream=True)
-        resp.raw.decode_content = True
-        path = resp
-
     # If we have an xml, extract the text from it
     if extension == "xml":
         generator = load_xml( F=path , keep_paragraphs=keep_paragraphs )
-        while True:
-            yield next( generator )
+        for sent, sent_id in generator:
+                yield sent, sent_id
     
     # If we have an xml.bz2 file, decompress and extract the text from it
     elif (extension == "bz2") and (extension2 == "xml"):

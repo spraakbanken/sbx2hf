@@ -14,14 +14,27 @@ import yaml
 from jinja2 import Template
 
 from helpers import get_value
-from urlparser import URLReader
+from runconfig_parser import Config, ConfigFromURL
 
 
-def write_readme(url_reader: URLReader, metadata : dict, fp : str):
-    TEMP_LINK = "https://ws.spraakbanken.gu.se/ws/metadata"
-    bibtex_query = f"{TEMP_LINK}/bibtex?resource={url_reader.resource_name}&type={metadata['type']}"
-    logging.info(f"Fetching bibtex from {bibtex_query}")
-    bibtex = requests.get(bibtex_query).json()['bibtex']
+def _create_hf_metadata_yaml(metadata: dict):
+    yaml_content = yaml.dump({
+        'language': [l['code'] for l in metadata['languages']] if 'languages' in metadata else None,
+        'pretty_name':  get_value(metadata, 'short_description')
+        },
+        allow_unicode=True
+    )
+    return f"---\n{yaml_content}---"
+
+
+def write_readme(path_parser: Config, metadata : dict, fp : str):
+    if isinstance(path_parser, ConfigFromURL):
+        api_endpoint = path_parser.sbx2hf_args['sbx_metadata_api']
+        bibtex_query = f"{api_endpoint}/metadata/bibtex?resource={path_parser.resource_name}&type={metadata['type']}"
+        logging.info(f"Fetching bibtex from {bibtex_query}")
+        bibtex = requests.get(bibtex_query).json()['bibtex']
+    else:
+        bibtex = "None"
     try:
         sbx2hf_version = pkg_resources.get_distribution('sbx2hf').version
     except importlib.metadata.PackageNotFoundError:
@@ -30,23 +43,14 @@ def write_readme(url_reader: URLReader, metadata : dict, fp : str):
         'description': get_value(metadata, 'description'),
         'title' : get_value(metadata, 'name'),
         'bibtex': bibtex,
-        'url': url_reader.url,
+        'url': path_parser.sbx2hf_args.get('url', 'None'),
         'sbx2hf_version': sbx2hf_version
     }
     with open('hf_gen/README.md', 'r') as file:
         template = Template(file.read(),trim_blocks=True)
         rendered_file = template.render(**template_variables)
-    hf_metadata = create_hf_metadata_yaml(metadata)
+    hf_metadata = _create_hf_metadata_yaml(metadata)
     output_file = codecs.open(fp, "w", "utf-8")
     readme = f"{hf_metadata}\n{rendered_file}"
     output_file.write(readme)
     output_file.close()
-
-def create_hf_metadata_yaml(metadata: dict):
-    yaml_content = yaml.dump({
-        'language': [l['code'] for l in metadata['languages']],
-        'pretty_name':  get_value(metadata, 'short_description')
-        },
-        allow_unicode=True
-    )
-    return f"---\n{yaml_content}---"
