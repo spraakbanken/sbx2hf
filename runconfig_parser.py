@@ -33,7 +33,7 @@ class Config():
 
     @property
     def resource_name(self):
-        return self.metadata.get('id', 'None')
+        return self.metadata.get('id', 'unnamed_resource')
     
     @property
     def output_folder(self):
