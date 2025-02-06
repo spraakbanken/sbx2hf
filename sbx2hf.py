@@ -19,17 +19,17 @@ from hf_gen.create_data_files import write_files
 
 
 def write_repository(runconfig):
-    output_folder = f"{runconfig.resource_name}"
-    print(f"Saving repository to {output_folder}")
-    if os.path.exists(output_folder):
-        shutil.rmtree(output_folder)
-    os.mkdir(output_folder)
-    if not runconfig.sbx2hf_args['hf_dataloading_script']:
+    print(f"Saving repository to {runconfig.output_folder}")
+    if os.path.exists(runconfig.output_folder):
+        shutil.rmtree(runconfig.output_folder)
+    os.mkdir(runconfig.output_folder)
+    print(runconfig.output_folder)
+    if not runconfig.sbx2hf_args.get('hf_dataloading_script'):
         if isinstance(runconfig, ConfigFromURL):
-            runconfig.download_file(to=output_folder)
+            runconfig.download_file(to=runconfig.output_folder)
         write_files(runconfig)
     else:
-        with open(f'{output_folder}/{runconfig.resource_name}_config.json', 'w') as f:
+        with open(f'{runconfig.output_folder}/{runconfig.resource_name}_config.json', 'w') as f:
             desc = get_value(runconfig.metadata, 'description')
             runconfig = {
                 'homepage': runconfig.resource_name,
@@ -38,8 +38,8 @@ def write_repository(runconfig):
                 'citation': get_bibtex_from_doi(runconfig['metadata']['doi']).decode("utf-8")
             }
             json.dump(runconfig, f, indent=4, sort_keys=True, ensure_ascii=False)
-            shutil.copyfile('hf_gen/dataset_loading_script.py', f'{output_folder}/{runconfig.resource_name}.py')
-    write_readme(runconfig, runconfig.metadata, f'{output_folder}/README.md')
+            shutil.copyfile('hf_gen/dataset_loading_script.py', f'{runconfig.output_folder}/{runconfig.resource_name}.py')
+    write_readme(runconfig, runconfig.metadata, f'{runconfig.output_folder}/README.md')
 
 
 def sbx2hf(**sbx2hf_args):

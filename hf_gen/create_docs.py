@@ -6,10 +6,10 @@
 import codecs
 import importlib
 import logging
+import pathlib
 import pkg_resources
 import requests
 import yaml
-
 
 from jinja2 import Template
 
@@ -46,7 +46,8 @@ def write_readme(path_parser: Config, metadata : dict, fp : str):
         'url': path_parser.sbx2hf_args.get('url', 'None'),
         'sbx2hf_version': sbx2hf_version
     }
-    with open('hf_gen/README.md', 'r') as file:
+    current_folder = pathlib.Path(__file__).parent.resolve()
+    with open(f'{current_folder}/README.md', 'r') as file:
         template = Template(file.read(),trim_blocks=True)
         rendered_file = template.render(**template_variables)
     hf_metadata = _create_hf_metadata_yaml(metadata)

@@ -12,7 +12,7 @@ def _write_file(path, output_path):
 
 
 def write_files(config):
-    if config.sbx2hf_args['url']:
+    if config.sbx2hf_args.get('url'):
         output_folder = config.output_folder
         output_path = f'{output_folder}/all.tsv'
         _write_file(config.bz2_local_path, output_path)

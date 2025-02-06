@@ -16,7 +16,7 @@ def _fetch_metadata(api_endpoint : str, resource_name):
 
 
 def create_runconfig(sbx2hf_args : dict):
-    if sbx2hf_args['url']:
+    if sbx2hf_args.get('url'):
         resource_name = sbx2hf_args['url'].strip('/').split('/')[-1]
         metadata = _fetch_metadata(sbx2hf_args['sbx_metadata_api'], resource_name)
         return ConfigFromURL(sbx2hf_args, metadata)
