@@ -19,7 +19,10 @@ def write_files(config):
     else:
         for fn in config.sbx2hf_args['paths']:
             assert fn.endswith('.xml.bz2') or fn.endswith('.xml')
-            base_fn = Path(fn).stem.split('.')[0]
+            if len(config.sbx2hf_args['paths']) == 1:
+                base_fn = 'all'
+            else:
+                base_fn = Path(fn).stem.split('.')[0]
             output_folder = config.output_folder
             output_path = f'{output_folder}/{base_fn}.tsv'
             _write_file(fn, output_path)
