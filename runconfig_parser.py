@@ -11,7 +11,13 @@ from urllib.parse import urlsplit
 def _fetch_metadata(api_endpoint : str, resource_name):
     metadata_query = f"{api_endpoint}/metadata?resource={resource_name}"
     logging.info(f"Fetching metadata from {metadata_query}")
-    metadata = requests.get(metadata_query).json()
+    try:
+        resp = requests.get(metadata_query)
+        resp.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        logging.info("Fatal error: could not fetch metadata from metadata api")
+        raise SystemExit(err)
+    metadata = resp.json()
     return metadata
 
 

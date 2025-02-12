@@ -32,7 +32,13 @@ def write_readme(path_parser: Config, metadata : dict, fp : str):
         api_endpoint = path_parser.sbx2hf_args['sbx_metadata_api']
         bibtex_query = f"{api_endpoint}/metadata/bibtex?resource={path_parser.resource_name}&type={metadata['type']}"
         logging.info(f"Fetching bibtex from {bibtex_query}")
-        bibtex = requests.get(bibtex_query).json()['bibtex']
+        try:
+            resp = requests.get(bibtex_query)
+            bibtex = resp.json()['bibtex']
+        except requests.exceptions.HTTPError as err:
+            logging.info("Bibtex could not be fetched from metadata API")
+            logging.info(err)
+            bibtex = "None"
     else:
         bibtex = "None"
     try:
