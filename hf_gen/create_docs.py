@@ -30,7 +30,7 @@ def _create_hf_metadata_yaml(metadata: dict):
 def write_readme(path_parser: Config, metadata : dict, fp : str):
     if isinstance(path_parser, ConfigFromURL):
         api_endpoint = path_parser.sbx2hf_args['sbx_metadata_api']
-        bibtex_query = f"{api_endpoint}/metadata/bibtex?resource={path_parser.resource_name}&type={metadata['type']}"
+        bibtex_query = f"{api_endpoint}/bibtex?resource={path_parser.resource_name}&type={metadata['type']}"
         logging.info(f"Fetching bibtex from {bibtex_query}")
         try:
             resp = requests.get(bibtex_query)

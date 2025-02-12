@@ -9,7 +9,7 @@ from urllib.parse import urlsplit
 
 
 def _fetch_metadata(api_endpoint : str, resource_name):
-    metadata_query = f"{api_endpoint}/metadata?resource={resource_name}"
+    metadata_query = f"{api_endpoint}?resource={resource_name}"
     logging.info(f"Fetching metadata from {metadata_query}")
     try:
         resp = requests.get(metadata_query)

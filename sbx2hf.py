@@ -89,7 +89,7 @@ if __name__ == '__main__':
     parser.add_argument('--hf-namespace', help="Huggingface user or organization to push dataset to", default='sbx')
     parser.add_argument('--hf-public', help="Flag if Hugging Face repository should be public", default=False)
     parser.add_argument('--hf-token', help="Huggingface User Access Token to authenticate to the Hub", default=os.environ.get('HF_TOKEN', None))
-    parser.add_argument('--sbx-metadata-api', help="API back-end to fetch information about SBX resources", default="https://ws.spraakbanken.gu.se/ws")
+    parser.add_argument('--sbx-metadata-api', help="API back-end to fetch information about SBX resources", default="https://ws.spraakbanken.gu.se/ws/metadata/v2/")
     parser.add_argument('--hf-dataloading-script',
                         help="""If set to True, the data (XML and JSON)
                                 are uploaded to HuggingFace and uses the automated scripts. Otherwise a
