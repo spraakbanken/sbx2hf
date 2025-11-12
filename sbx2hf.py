@@ -18,6 +18,9 @@ from hf_gen.create_docs import write_readme
 from hf_gen.create_data_files import write_files
 
 
+DEFAULT_SBX_METADATA_API = "https://ws.spraakbanken.gu.se/ws/metadata/v3/"
+
+
 def write_repository(runconfig):
     print(f"Saving repository to {runconfig.output_folder}")
     if os.path.exists(runconfig.output_folder):
@@ -89,7 +92,7 @@ if __name__ == '__main__':
     parser.add_argument('--hf-namespace', help="Huggingface user or organization to push dataset to", default='sbx')
     parser.add_argument('--hf-public', help="Flag if Hugging Face repository should be public", default=False)
     parser.add_argument('--hf-token', help="Huggingface User Access Token to authenticate to the Hub", default=os.environ.get('HF_TOKEN', None))
-    parser.add_argument('--sbx-metadata-api', help="API back-end to fetch information about SBX resources", default="https://ws.spraakbanken.gu.se/ws/metadata/v2/")
+    parser.add_argument('--sbx-metadata-api', help="API back-end to fetch information about SBX resources", default=DEFAULT_SBX_METADATA_API)
     parser.add_argument('--hf-dataloading-script',
                         help="""If set to True, the data (XML and JSON)
                                 are uploaded to HuggingFace and uses the automated scripts. Otherwise a
@@ -102,7 +105,7 @@ if __name__ == '__main__':
                      help='Provide logging level. Example --loglevel debug, default=warning' )
     parser.add_argument(
         '-r', '--row-output',
-        choices=['sentences', 'tokens'], 
+        choices=['sentences', 'tokens'],
         help='Which output the rows should be in.'
     )
     args = parser.parse_args()
